@@ -144,6 +144,24 @@ def replace_words_securely(script, mapping):
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
     return script
 
+# Rename combos
+def rename_combos(script):
+    # Regular expression to find all combo definitions
+    combo_pattern = re.compile(r'\bcombo\s+([a-zA-Z_][\w]*)\s*\{')
+    combos = set(re.findall(combo_pattern, script))
+
+    # Generate a random new name for each combo
+    combo_map = {combo: f"combo_{''.join(random.choices(string.ascii_letters + string.digits, k=8))}" for combo in combos}
+
+    # Replace all occurrences of the combo names
+    for old_name, new_name in sorted(combo_map.items(), key=lambda x: len(x[0]), reverse=True):
+        # Rename combo declaration
+        script = re.sub(rf'\bcombo\s+{re.escape(old_name)}\s*\{{', f'combo {new_name} {{', script)
+        # Rename all references to the combo
+        script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
+
+    return script
+
 # Process the script
 def process_script(filename):
     script = load_script(filename)
@@ -154,7 +172,8 @@ def process_script(filename):
     script = rename_int_arrays(script)
     script = rename_int_2d_arrays(script)
     script = rename_string_constants(script)  
-    script = rename_string_arrays(script)  
+    script = rename_string_arrays(script)
+    script = rename_combos(script)  
     script = rename_enums(script)
     new_filename = save_script(filename, script)
     print(f"✅ Script processed! Saved as: {new_filename}")
