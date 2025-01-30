@@ -54,6 +54,8 @@ py gpc-script-obfuscator.py
 ```
 
 #### 3️⃣ Enter the filename of your GPC script (e.g., RocketMod.gpc).
+the gpc script need to be in the same folder as the python script.
+
 #### 4️⃣ The script will generate a new obfuscated file with _obfuscated.gpc as a suffix.
 
 ### 📜 How It Works (Command Line)
