@@ -5,16 +5,28 @@ import random
 import string
 import os
 
-# Load GPC script from file with encoding handling
-def load_script(filename):
-    try:
-        with open(filename, "r", encoding="utf-8") as file:
-            content = file.read()
-    except UnicodeDecodeError:
-        print("⚠️ UTF-8 decoding failed. Trying an alternative encoding...")
-        with open(filename, "r", encoding="windows-1252", errors="replace") as file:
-            content = file.read()
-    return remove_comments(content)
+# Load GPC script from file with error handling
+def load_script():
+    while True:
+        filename = input("Enter the pathname or name of your GPC script file: (ex: c:\\myscript.gpc or myscript.gpc): ")
+        
+        if not os.path.isfile(filename):
+            print(f"❌ Error: File '{filename}' not found. Please enter a valid path.")
+            continue  # Ask again
+        
+        try:
+            with open(filename, "r", encoding="utf-8") as file:
+                content = file.read()
+            return filename, remove_comments(content)
+        except UnicodeDecodeError:
+            print(f"⚠️ Error: Could not decode '{filename}' properly. Trying an alternative encoding...")
+            try:
+                with open(filename, "r", encoding="windows-1252", errors="replace") as file:
+                    content = file.read()
+                return filename, remove_comments(content)
+            except Exception as e:
+                print(f"❌ Critical Error: Could not open '{filename}'. Error: {str(e)}")
+                continue  # Ask again
 
 # Remove single-line (//) and multi-line (/* */) comments
 def remove_comments(script):
@@ -178,8 +190,8 @@ def replace_words_securely(script, mapping):
     return script
     
 # Process the script
-def process_script(filename):
-    script = load_script(filename)
+def process_script():
+    filename, script = load_script()
     script = prepend_obfuscation_comment(script)  # Add message at the top
     script = rename_uint8_arrays(script)
     script = rename_defines(script)
@@ -195,5 +207,4 @@ def process_script(filename):
     print(f"✅ Script processed! Saved as: {new_filename}")
 
 if __name__ == "__main__":
-    filename = input("Enter the pathname or name of your GPC script file: (ex c:\myscript.gpc or myscript.gpc) : ")
-    process_script(filename)
+    process_script()
