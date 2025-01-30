@@ -40,8 +40,7 @@ brew install python3       # macOS
 ####  1️⃣ Download or Clone the Repository:
 
 ```
-git clone https://github.com/yourusername/gpc-obfuscator.git
-cd gpc-obfuscator
+git clone this repo
 ```
 
 #### 2️⃣ Run the script:
