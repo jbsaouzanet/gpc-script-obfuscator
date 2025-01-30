@@ -36,14 +36,14 @@ def generate_random_name(prefix):
 
 # Rename defines while preserving values (semicolon optional)
 def rename_defines(script):
-    define_pattern = re.compile(r'\bdefine\s+([a-zA-Z_][\w]*)\s*=\s*([^;]+);?')
+    define_pattern = re.compile(r'\bdefine\s+([a-zA-Z_][\w]*)\s*=\s*([^;]+);')
     defines = set(re.findall(define_pattern, script))
-
     define_map = {define[0]: generate_random_name("def_") for define in defines}
 
-    for old_name, new_name in define_map.items():
-        script = re.sub(rf'\bdefine\s+{re.escape(old_name)}\s*=\s*([^;]+);?', f'define {new_name} = \\1;', script)
-
+    for old_name, new_name in sorted(define_map.items(), key=lambda x: len(x[0]), reverse=True):
+        script = re.sub(rf'\bdefine\s+{re.escape(old_name)}\s*=\s*([^;]+);', f'define {new_name} = \\1;', script)
+        
+    script = replace_words_securely(script, define_map)
     return script
 
 # Rename uint8 arrays
@@ -162,9 +162,25 @@ def rename_enums(script):
 
     return script
 
+# Prepend obfuscation message at the top of the script
+def prepend_obfuscation_comment(script):
+    obfuscation_message = "// Obfuscation done with gpc-script-obfuscator script\n"
+    obfuscation_message += "// (join Discord: https://discord.gg/8kdcW5pd to get more info and last update)\n"
+    obfuscation_message += "// you liked ? pay me a coffee : https://buymeacoffee.com/jorel1337\n\n"
+    return obfuscation_message + script.strip()
+
+
+# General function to replace words securely
+def replace_words_securely(script, mapping):
+    for old_name in sorted(mapping.keys(), key=len, reverse=True):
+        new_name = mapping[old_name]
+        script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
+    return script
+    
 # Process the script
 def process_script(filename):
     script = load_script(filename)
+    script = prepend_obfuscation_comment(script)  # Add message at the top
     script = rename_uint8_arrays(script)
     script = rename_defines(script)
     script = rename_functions(script)
@@ -179,5 +195,5 @@ def process_script(filename):
     print(f"✅ Script processed! Saved as: {new_filename}")
 
 if __name__ == "__main__":
-    filename = input("Enter the name of your GPC script file: ")
+    filename = input("Enter the pathname or name of your GPC script file: (ex c:\myscript.gpc or myscript.gpc) : ")
     process_script(filename)
