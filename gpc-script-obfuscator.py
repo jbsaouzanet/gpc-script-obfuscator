@@ -177,7 +177,7 @@ def rename_enums(script):
 # Prepend obfuscation message at the top of the script
 def prepend_obfuscation_comment(script):
     obfuscation_message = "// Obfuscation done with gpc-script-obfuscator script\n"
-    obfuscation_message += "// (join Discord: https://discord.gg/8kdcW5pd to get more info and last update)\n"
+    obfuscation_message += "// (join Discord: https://discord.gg/7ZGANnFEUS to get more info and last update)\n"
     obfuscation_message += "// you liked ? pay me a coffee : https://buymeacoffee.com/jorel1337\n\n"
     return obfuscation_message + script.strip()
 
