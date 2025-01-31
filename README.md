@@ -102,6 +102,6 @@ Developer ? you find issue ? help to solve and improve the script ! ;)
 
 ## 📬 Contact
 For questions or collaborations, contact me at :
-📧 jorel1337 on https://discord.gg/8kdcW5pd
+📧 jorel1337 on  https://discord.gg/7ZGANnFEUS
 
 💬 GitHub Issues: Open an Issue
