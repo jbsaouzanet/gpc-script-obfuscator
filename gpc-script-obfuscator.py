@@ -9,11 +9,11 @@ import os
 def load_script():
     while True:
         filename = input("Enter the pathname or name of your GPC script file: (ex: c:\\myscript.gpc or myscript.gpc): ")
-        
+
         if not os.path.isfile(filename):
             print(f"❌ Error: File '{filename}' not found. Please enter a valid path.")
             continue  # Ask again
-        
+
         try:
             with open(filename, "r", encoding="utf-8") as file:
                 content = file.read()
@@ -27,6 +27,21 @@ def load_script():
             except Exception as e:
                 print(f"❌ Critical Error: Could not open '{filename}'. Error: {str(e)}")
                 continue  # Ask again
+
+def toggle_dev_mod(script):
+    """
+    If `define devMod = TRUE;` exists, change it to `define devMod = FALSE;`
+    """
+    # Define the pattern to match `define devMod = TRUE;`
+    pattern = r'\bdefine\s+devMod\s*=\s*TRUE\s*;'
+
+    # Check if the pattern exists in the script
+    if re.search(pattern, script):
+        # Replace TRUE with FALSE
+        script = re.sub(pattern, 'define devMod = FALSE;', script)
+
+    return script
+
 
 # Remove single-line (//) and multi-line (/* */) comments
 def remove_comments(script):
@@ -54,7 +69,7 @@ def rename_defines(script):
 
     for old_name, new_name in sorted(define_map.items(), key=lambda x: len(x[0]), reverse=True):
         script = re.sub(rf'\bdefine\s+{re.escape(old_name)}\s*=\s*([^;]+);', f'define {new_name} = \\1;', script)
-        
+
     script = replace_words_securely(script, define_map)
     return script
 
@@ -188,10 +203,11 @@ def replace_words_securely(script, mapping):
         new_name = mapping[old_name]
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
     return script
-    
+
 # Process the script
 def process_script():
     filename, script = load_script()
+    script = toggle_dev_mod(script)
     script = prepend_obfuscation_comment(script)  # Add message at the top
     script = rename_uint8_arrays(script)
     script = rename_defines(script)
