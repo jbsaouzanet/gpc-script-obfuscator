@@ -137,14 +137,34 @@ def rename_int_2d_arrays(script):
 
 # Rename string constants
 def rename_string_constants(script):
-    string_constant_pattern = re.compile(r'\bconst\s+string\s+([a-zA-Z_][\w]*)\s*=')
-    string_constants = set(re.findall(string_constant_pattern, script))
-    string_constant_map = {const: generate_random_name("str_") for const in string_constants}
+    import re
 
-    for old_name, new_name in string_constant_map.items():
+    # Match constant string variables
+    string_constant_pattern = re.compile(r'\bconst\s+string\s+(\w+)\s*=\s*"([^"]*)";')
+    matches = string_constant_pattern.findall(script)
+
+    string_map = {}
+
+    for var_name, value in matches:
+        obfuscated_name = generate_random_name("str_")
+        string_map[var_name] = obfuscated_name
+
+    for old_name, new_name in string_map.items():
+        # Replace only the variable name in the declaration
+        script = re.sub(rf'\b{re.escape(old_name)}\b(?=\s*=\s*")', new_name, script)
+
+        # Replace occurrences of the variable throughout the script
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
 
+        # Check if the obfuscated variable name matches the string value (incorrect replacement)
+        pattern = re.compile(rf'const string {re.escape(new_name)}\s*=\s*"{re.escape(new_name)}";')
+        if pattern.search(script):
+            print(f"⚠️ Warning: String constant '{old_name}' was replaced incorrectly with its own name '{new_name}'.")
+
     return script
+
+
+
 
 # Rename string arrays
 def rename_string_arrays(script):
@@ -172,6 +192,8 @@ def rename_combos(script):
 
 # Rename enums
 def rename_enums(script):
+    import re
+
     enum_pattern = re.compile(r'\benum\s*{([^}]*)}', re.MULTILINE)
     matches = enum_pattern.findall(script)
 
@@ -184,8 +206,37 @@ def rename_enums(script):
         for name in enum_names:
             enum_map[name] = generate_random_name("enum_")
 
+    # Function to check if an enum is inside double quotes and get the line number
+    def is_inside_quotes(script, name):
+        in_string = False
+        escape = False
+        line_number = 1  # Track line number
+
+        for i, char in enumerate(script):
+            if char == "\n":
+                line_number += 1  # Increment line number at new lines
+
+            if char == "\\" and not escape:  # Handle escaped quotes
+                escape = True
+                continue
+
+            if char == '"' and not escape:
+                in_string = not in_string  # Toggle string state
+
+            escape = False  # Reset escape state
+
+            # Check if the name is inside a string
+            if in_string and script[i:i + len(name)] == name:
+                return True, line_number
+
+        return False, None
+
     for old_name, new_name in enum_map.items():
-        script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
+        inside_quotes, line_number = is_inside_quotes(script, old_name)
+        if inside_quotes:
+            print(f"⚠️ Warning: Enum '{old_name}' appears inside double quotes on line {line_number} and may be a string literal!")
+        else:
+            script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
 
     return script
 
@@ -195,7 +246,6 @@ def prepend_obfuscation_comment(script):
     obfuscation_message += "// (join Discord: https://discord.gg/7ZGANnFEUS to get more info and last update)\n"
     obfuscation_message += "// you liked ? pay me a coffee : https://buymeacoffee.com/jorel1337\n\n"
     return obfuscation_message + script.strip()
-
 
 # General function to replace words securely
 def replace_words_securely(script, mapping):
