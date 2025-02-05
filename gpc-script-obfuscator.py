@@ -19,7 +19,7 @@ def load_script():
                 content = file.read()
             return filename, remove_comments(content)
         except UnicodeDecodeError:
-            print(f"⚠️ Error: Could not decode '{filename}' properly. Trying an alternative encoding...")
+            print(f"⚠️ Warning: Could not decode '{filename}' properly. Trying an alternative encoding...")
             try:
                 with open(filename, "r", encoding="windows-1252", errors="replace") as file:
                     content = file.read()
@@ -190,19 +190,29 @@ def rename_combos(script):
 
     return script
 
-# Rename enums
-def rename_enums(script):
-    import re
+import re
 
-    enum_pattern = re.compile(r'\benum\s*{([^}]*)}', re.MULTILINE)
+def rename_enums(script):
+    """
+    Finds all enums, renames them while ensuring we don't modify enums inside string literals.
+    """
+    enum_pattern = re.compile(r'\benum\s*{([\s\S]*?)}', re.MULTILINE)  # Capture multi-line enums
     matches = enum_pattern.findall(script)
 
     enum_map = {}
 
     for match in matches:
-        enum_lines = match.split(",")
-        enum_names = [e.strip().split("=")[0] for e in enum_lines if e.strip()]
+        enum_lines = match.split(",")  # Split by comma to process individual entries
 
+        # Extract enum names, handling both cases (with and without '=')
+        enum_names = []
+        for e in enum_lines:
+            parts = e.strip().split("=")
+            name = parts[0].strip()
+            if name:  # Only consider valid names
+                enum_names.append(name)
+
+        # Generate obfuscated names
         for name in enum_names:
             enum_map[name] = generate_random_name("enum_")
 
@@ -231,6 +241,7 @@ def rename_enums(script):
 
         return False, None
 
+    # Replace each enum name with its obfuscated version
     for old_name, new_name in enum_map.items():
         inside_quotes, line_number = is_inside_quotes(script, old_name)
         if inside_quotes:
@@ -239,6 +250,7 @@ def rename_enums(script):
             script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
 
     return script
+
 
 # Prepend obfuscation message at the top of the script
 def prepend_obfuscation_comment(script):
@@ -254,14 +266,74 @@ def replace_words_securely(script, mapping):
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
     return script
 
+# Helper function to replace parameter names inside the function body
+def replace_parameters_in_body(function_body, param_map):
+    """ Replaces all occurrences of parameters inside the function body using the given mapping. """
+    for old_param, new_param in param_map:
+        function_body = re.sub(rf'\b{re.escape(old_param)}\b', new_param, function_body)
+    return function_body
+
+# Rename function parameters and ensure they are replaced inside the function body
+def rename_function_parameters(script):
+    # Correctly capture entire function blocks using regex
+    function_pattern = re.compile(r'(function\s+\w+)\s*\((.*?)\)\s*\{([\s\S]*?)\n\}', re.DOTALL)
+
+    def obfuscate_parameters(match):
+        function_declaration = match.group(1)  # Capture "function fn_name"
+        parameters = match.group(2)            # Capture parameters inside parentheses
+        function_body = match.group(3)         # Capture the entire function body
+
+        # Process parameter names and store mappings
+        param_list = [p.strip() for p in parameters.split(',') if p.strip()]
+        param_map = [(param, generate_random_name("var_")) for param in param_list]
+
+        # Replace parameters in function signature
+        obfuscated_signature = f"{function_declaration}(" + ", ".join(new for _, new in param_map) + ") {"
+
+        # Replace parameters inside function body
+        function_body = replace_parameters_in_body(function_body, param_map)
+
+        return obfuscated_signature + function_body + "\n}"
+
+    return function_pattern.sub(obfuscate_parameters, script)
+
+import re
+
+def warn_unnecessary_int(script):
+    """
+    Identifies function signatures where 'int' appears inconsistently before parameters
+    and logs a warning with the line number.
+    """
+    lines = script.split("\n")  # Split script into lines
+    function_pattern = re.compile(r'function\s+\w+\s*\((.*?)\)\s*\{')  # Function signature regex
+
+    for line_num, line in enumerate(lines, start=1):
+        match = function_pattern.search(line)
+        if match:
+            params = match.group(1).split(',')
+            has_untyped = any("int" not in p.strip() for p in params)  # Check if there's a mix
+            has_int = any("int" in p.strip() for p in params)  # Check if "int" exists
+
+            if has_untyped and has_int:
+                # Find the misplaced "int" and log a warning
+                for param in params:
+                    param = param.strip()
+                    if param.startswith("int "):  # Find where int is wrongly placed
+                        print(f"❌ Error: Remove 'int' in function parameter list on line {line_num}:")
+                        print(f"   -> {line.strip()}")
+                        break  # No need to check further
+
+
 # Process the script
 def process_script():
     filename, script = load_script()
+    warn_unnecessary_int(script)
     script = toggle_dev_mod(script)
     script = prepend_obfuscation_comment(script)  # Add message at the top
     script = rename_uint8_arrays(script)
     script = rename_defines(script)
     script = rename_functions(script)
+    script = rename_function_parameters(script)  # <-- Added this step
     script = rename_variables(script)
     script = rename_int_arrays(script)
     script = rename_int_2d_arrays(script)
@@ -271,6 +343,7 @@ def process_script():
     script = rename_enums(script)
     new_filename = save_script(filename, script)
     print(f"✅ Script processed! Saved as: {new_filename}")
+
 
 if __name__ == "__main__":
     process_script()
