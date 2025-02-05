@@ -5,6 +5,10 @@ import random
 import string
 import os
 
+
+error_count = 0
+warning_count = 0
+
 # Load GPC script from file with error handling
 def load_script():
     while True:
@@ -68,6 +72,7 @@ def rename_defines(script):
     define_map = {define[0]: generate_random_name("def_") for define in defines}
 
     for old_name, new_name in sorted(define_map.items(), key=lambda x: len(x[0]), reverse=True):
+        print(f"🔄 Replacing define '{old_name}' with '{new_name}'")
         script = re.sub(rf'\bdefine\s+{re.escape(old_name)}\s*=\s*([^;]+);', f'define {new_name} = \\1;', script)
 
     script = replace_words_securely(script, define_map)
@@ -91,6 +96,7 @@ def rename_functions(script):
     function_map = {fn: generate_random_name("fn_") for fn in functions}
 
     for old_name, new_name in function_map.items():
+        print(f"🔄 Replacing function '{old_name}' with '{new_name}'")
         script = re.sub(rf'\bfunction\s+{re.escape(old_name)}\s*\(', f'function {new_name}(', script)
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
 
@@ -109,6 +115,7 @@ def rename_variables(script):
     variable_map = {var: generate_random_name("var_") for var in variables}
 
     for old_name, new_name in variable_map.items():
+        print(f"🔄 Replacing variable '{old_name}' with '{new_name}'")
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
 
     return script
@@ -137,7 +144,8 @@ def rename_int_2d_arrays(script):
 
 # Rename string constants
 def rename_string_constants(script):
-    import re
+    global error_count
+    global warning_count
 
     # Match constant string variables
     string_constant_pattern = re.compile(r'\bconst\s+string\s+(\w+)\s*=\s*"([^"]*)";')
@@ -155,12 +163,12 @@ def rename_string_constants(script):
 
         # Replace occurrences of the variable throughout the script
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
-
+        print(f"🔄 Replacing string constant '{old_name}' with '{new_name}'")
         # Check if the obfuscated variable name matches the string value (incorrect replacement)
         pattern = re.compile(rf'const string {re.escape(new_name)}\s*=\s*"{re.escape(new_name)}";')
         if pattern.search(script):
             print(f"⚠️ Warning: String constant '{old_name}' was replaced incorrectly with its own name '{new_name}'.")
-
+            warning_count += 1
     return script
 
 
@@ -173,6 +181,7 @@ def rename_string_arrays(script):
     string_array_map = {arr: generate_random_name("strArr_") for arr in string_arrays}
 
     for old_name, new_name in string_array_map.items():
+        print(f"🔄 Replacing string constant '{old_name}' with '{new_name}'")
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
 
     return script
@@ -196,6 +205,8 @@ def rename_enums(script):
     """
     Finds all enums, renames them while ensuring we don't modify enums inside string literals.
     """
+    global error_count
+    global warning_count
     enum_pattern = re.compile(r'\benum\s*{([\s\S]*?)}', re.MULTILINE)  # Capture multi-line enums
     matches = enum_pattern.findall(script)
 
@@ -246,7 +257,9 @@ def rename_enums(script):
         inside_quotes, line_number = is_inside_quotes(script, old_name)
         if inside_quotes:
             print(f"⚠️ Warning: Enum '{old_name}' appears inside double quotes on line {line_number} and may be a string literal!")
+            warning_count += 1
         else:
+            print(f"🔄 Replacing enum '{old_name}' with '{new_name}'")
             script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
 
     return script
@@ -304,6 +317,8 @@ def warn_unnecessary_int(script):
     Identifies function signatures where 'int' appears inconsistently before parameters
     and logs a warning with the line number.
     """
+    global error_count
+    global warning_count
     lines = script.split("\n")  # Split script into lines
     function_pattern = re.compile(r'function\s+\w+\s*\((.*?)\)\s*\{')  # Function signature regex
 
@@ -321,6 +336,7 @@ def warn_unnecessary_int(script):
                     if param.startswith("int "):  # Find where int is wrongly placed
                         print(f"❌ Error: Remove 'int' in function parameter list on line {line_num}:")
                         print(f"   -> {line.strip()}")
+                        error_count += 1
                         break  # No need to check further
 
 
@@ -356,11 +372,29 @@ def rename_int16_arrays(script):
 
     return script
 
+def warn_colon_at_end_of_line(script):
+    """
+    Identifies lines where a colon (:) appears at the end and logs an error with the line number.
+    """
+    global error_count
+    global warning_count
+    lines = script.split("\n")  # Split script into lines
+    pattern = re.compile(r':\s*(//|$)')  # Matches ':' at the end of a line or before a comment
+
+    for line_num, line in enumerate(lines, start=1):
+        if pattern.search(line.strip()):  # Check for ':' at the end of the line
+            print(f"❌ Error: Unexpected ':' found at the end of line {line_num}:")
+            error_count += 1
+            print(f"   -> {line.strip()}")
+
 
 # Process the script
 def process_script():
+    global error_count
+    global warning_count
     filename, script = load_script()
     warn_unnecessary_int(script)
+    warn_colon_at_end_of_line(script)
     script = toggle_dev_mod(script)
     script = prepend_obfuscation_comment(script)  # Add message at the top
     script = rename_uint8_arrays(script)
@@ -377,7 +411,10 @@ def process_script():
     script = rename_combos(script)
     script = rename_enums(script)
     new_filename = save_script(filename, script)
-    print(f"✅ Script processed! Saved as: {new_filename}")
+    print("\n✅ Script processed with :")
+    print(f"❌ Total Errors: {error_count}")
+    print(f"⚠️ Total Warnings: {warning_count}")
+    print(f"📄 Saved as: {new_filename}")
 
 
 if __name__ == "__main__":
