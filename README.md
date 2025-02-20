@@ -98,4 +98,6 @@ For questions or collaborations, contact me at :
 📧 jorel1337 on  https://discord.gg/7ZGANnFEUS
 
 💬 GitHub Issues: Open an Issue
-"Enjoy!" 
+
+## Donate
+If you enjoyed the script and found it useful, I’d really appreciate your support! You can **buy me a coffee** here: [buymeacoffee.com/jorel1337 ](https://buymeacoffee.com/jorel1337 )  :coffee:
