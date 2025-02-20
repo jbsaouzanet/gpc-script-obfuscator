@@ -4,29 +4,37 @@ import re
 import random
 import string
 import os
+import sys
 
 # Load GPC script from file with error handling
-def load_script():
-    while True:
-        filename = input("Enter the pathname or name of your GPC script file: (ex: c:\\myscript.gpc or myscript.gpc): ")
+def load_script(filename=None):
+    if filename is None:
+        while True:
+            filename = input("Enter the pathname or name of your GPC script file: (ex: c:\\myscript.gpc or myscript.gpc): ")
 
-        if not os.path.isfile(filename):
-            print(f"❌ Error: File '{filename}' not found. Please enter a valid path.")
-            continue  # Ask again
+            if not os.path.isfile(filename):
+                print(f"❌ Error: File '{filename}' not found. Please enter a valid path.")
+                continue  # Ask again
+            break
 
+    if not os.path.isfile(filename):
+        print(f"❌ Error: File '{filename}' not found. Please provide a valid path.")
+        sys.exit(1)
+
+    try:
+        with open(filename, "r", encoding="utf-8") as file:
+            content = file.read()
+        return filename, remove_comments(content)
+    except UnicodeDecodeError:
+        print(f"⚠️ Error: Could not decode '{filename}' properly. Trying an alternative encoding...")
         try:
-            with open(filename, "r", encoding="utf-8") as file:
+            with open(filename, "r", encoding="windows-1252", errors="replace") as file:
                 content = file.read()
             return filename, remove_comments(content)
-        except UnicodeDecodeError:
-            print(f"⚠️ Error: Could not decode '{filename}' properly. Trying an alternative encoding...")
-            try:
-                with open(filename, "r", encoding="windows-1252", errors="replace") as file:
-                    content = file.read()
-                return filename, remove_comments(content)
-            except Exception as e:
-                print(f"❌ Critical Error: Could not open '{filename}'. Error: {str(e)}")
-                continue  # Ask again
+        except Exception as e:
+            print(f"❌ Critical Error: Could not open '{filename}'. Error: {str(e)}")
+            sys.exit(1)
+
 
 def toggle_dev_mod(script):
     """
@@ -358,8 +366,8 @@ def rename_int16_arrays(script):
 
 
 # Process the script
-def process_script():
-    filename, script = load_script()
+def process_script(filename=None):
+    filename, script = load_script(filename)
     warn_unnecessary_int(script)
     script = toggle_dev_mod(script)
     script = prepend_obfuscation_comment(script)  # Add message at the top
@@ -381,4 +389,7 @@ def process_script():
 
 
 if __name__ == "__main__":
-    process_script()
+    if len(sys.argv) > 1:
+        process_script(sys.argv[1])
+    else:
+        process_script()

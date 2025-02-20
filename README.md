@@ -43,19 +43,12 @@ brew install python3       # macOS
 git clone this repo
 ```
 
-#### 2️⃣ Run the script:
+#### 2️⃣  Run the script By drag & drop :
 ```
-python gpc-script-obfuscator.py
-or (if using Python 3 explicitly) 
-python3 gpc-script-obfuscator.py
-or 
-py gpc-script-obfuscator.py
+drag and drop your gpc file into gpc-script-obfuscator.bat
 ```
 
-#### 3️⃣ Enter the filename of your GPC script (e.g., RocketMod.gpc).
-the gpc script need to be in the same folder as the python script.
-
-#### 4️⃣ The script will generate a new obfuscated file with _obfuscated.gpc as a suffix.
+#### 3️⃣ The script will generate a new obfuscated file with _obfuscated.gpc as a suffix in the same folder as your GPC script.
 
 ### 📜 How It Works (Command Line)
 The script automatically:
