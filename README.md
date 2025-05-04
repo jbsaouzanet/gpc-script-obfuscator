@@ -108,5 +108,5 @@ Your support helps us keep growing and improving. If you’d like to contribute,
 
 Send your donation via **PayPal** or **Revolut** using one of the links below:
 
-🔗 <:paypal:1366429142677065788> :  **https://www.paypal.com/donate/?hosted_button_id=4H8ZEL2VFJBQS  
-🔗 <:revolut:1366429171215241336> : **https://revolut.me/jeanba13q8**
+🔗 paypal :  https://www.paypal.com/donate/?hosted_button_id=4H8ZEL2VFJBQS  
+🔗 revolut : https://revolut.me/jeanba13q8
