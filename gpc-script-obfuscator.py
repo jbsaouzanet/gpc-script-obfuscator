@@ -77,7 +77,7 @@ def generate_random_name(prefix):
 def rename_defines(script):
     define_pattern = re.compile(r'\bdefine\s+([a-zA-Z_][\w]*)\s*=\s*([^;]+);')
     defines = set(re.findall(define_pattern, script))
-    define_map = {define[0]: generate_random_name("def_") for define in defines}
+    define_map = {define[0]: generate_random_name("RocketMod_") for define in defines}
 
     for old_name, new_name in sorted(define_map.items(), key=lambda x: len(x[0]), reverse=True):
         print(f"🔄 Replacing define '{old_name}' with '{new_name}'")
@@ -90,7 +90,7 @@ def rename_defines(script):
 def rename_uint8_arrays(script):
     uint8_array_pattern = re.compile(r'\bconst\s+uint8\s+([a-zA-Z_][\w]*)\[\]')
     uint8_arrays = set(re.findall(uint8_array_pattern, script))
-    uint8_array_map = {arr: generate_random_name("uint8Arr_") for arr in uint8_arrays}
+    uint8_array_map = {arr: generate_random_name("RocketMod_") for arr in uint8_arrays}
 
     for old_name, new_name in uint8_array_map.items():
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
@@ -101,7 +101,7 @@ def rename_uint8_arrays(script):
 def rename_functions(script):
     function_pattern = re.compile(r'\bfunction\s+(\w+)\s*\(')
     functions = set(re.findall(function_pattern, script))
-    function_map = {fn: generate_random_name("fn_") for fn in functions}
+    function_map = {fn: generate_random_name("RocketMod_") for fn in functions}
 
     for old_name, new_name in function_map.items():
         print(f"🔄 Replacing function '{old_name}' with '{new_name}'")
@@ -120,7 +120,7 @@ def rename_variables(script):
         var_names = [v.strip() for v in match.split(",")]
         variables.update(var_names)
 
-    variable_map = {var: generate_random_name("var_") for var in variables}
+    variable_map = {var: generate_random_name("RocketMod_") for var in variables}
 
     for old_name, new_name in variable_map.items():
         print(f"🔄 Replacing variable '{old_name}' with '{new_name}'")
@@ -132,7 +132,7 @@ def rename_variables(script):
 def rename_int_arrays(script):
     array_pattern = re.compile(r'\bint\s+([a-zA-Z_][\w]*)\s*\[\d*\];')
     arrays = set(re.findall(array_pattern, script))
-    array_map = {arr: generate_random_name("varArr_") for arr in arrays}
+    array_map = {arr: generate_random_name("RocketMod_") for arr in arrays}
 
     for old_name, new_name in array_map.items():
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
@@ -143,7 +143,7 @@ def rename_int_arrays(script):
 def rename_int_2d_arrays(script):
     int2d_pattern = re.compile(r'\bconst\s+int\s+([a-zA-Z_][\w]*)\[\]\[\]')
     int2d_arrays = set(re.findall(int2d_pattern, script))
-    int2d_array_map = {arr: generate_random_name("intArr2D_") for arr in int2d_arrays}
+    int2d_array_map = {arr: generate_random_name("RocketMod_") for arr in int2d_arrays}
 
     for old_name, new_name in int2d_array_map.items():
         script = re.sub(rf'\b{re.escape(old_name)}\b', new_name, script)
@@ -162,7 +162,7 @@ def rename_string_constants(script):
     string_map = {}
 
     for var_name, value in matches:
-        obfuscated_name = generate_random_name("str_")
+        obfuscated_name = generate_random_name("RocketMod_")
         string_map[var_name] = obfuscated_name
 
     for old_name, new_name in string_map.items():
@@ -186,7 +186,7 @@ def rename_string_constants(script):
 def rename_string_arrays(script):
     string_array_pattern = re.compile(r'\bconst\s+string\s+([a-zA-Z_][\w]*)\[\]')
     string_arrays = set(re.findall(string_array_pattern, script))
-    string_array_map = {arr: generate_random_name("strArr_") for arr in string_arrays}
+    string_array_map = {arr: generate_random_name("RocketMod_") for arr in string_arrays}
 
     for old_name, new_name in string_array_map.items():
         print(f"🔄 Replacing string constant '{old_name}' with '{new_name}'")
@@ -199,7 +199,7 @@ def rename_combos(script):
     combo_pattern = re.compile(r'\bcombo\s+([a-zA-Z_][\w]*)\s+\{')
     combos = set(re.findall(combo_pattern, script))
 
-    combo_map = {combo: generate_random_name("combo_") for combo in combos}
+    combo_map = {combo: generate_random_name("RocketMod_") for combo in combos}
 
     for old_name, new_name in combo_map.items():
         script = re.sub(rf'\bcombo\s+{re.escape(old_name)}\s+\{{', f'combo {new_name} {{', script)
@@ -233,7 +233,7 @@ def rename_enums(script):
 
         # Generate obfuscated names
         for name in enum_names:
-            enum_map[name] = generate_random_name("enum_")
+            enum_map[name] = generate_random_name("RocketMod_")
 
     # Function to check if an enum is inside double quotes and get the line number
     def is_inside_quotes(script, name):
@@ -306,7 +306,7 @@ def rename_function_parameters(script):
 
         # Process parameter names and store mappings
         param_list = [p.strip() for p in parameters.split(',') if p.strip()]
-        param_map = [(param, generate_random_name("var_")) for param in param_list]
+        param_map = [(param, generate_random_name("RocketMod_")) for param in param_list]
 
         # Replace parameters in function signature
         obfuscated_signature = f"{function_declaration}(" + ", ".join(new for _, new in param_map) + ") {"
@@ -355,7 +355,7 @@ def rename_int16_2d_arrays(script):
     int16_2d_pattern = re.compile(r'\bconst\s+int16\s+([a-zA-Z_][\w]*)\s*\[\]\[\]\s*=\s*\{', re.MULTILINE)
     matches = int16_2d_pattern.findall(script)
 
-    array_map = {array_name: generate_random_name("arr2D_") for array_name in matches}
+    array_map = {array_name: generate_random_name("RocketMod_") for array_name in matches}
 
     for old_name, new_name in array_map.items():
         print(f"🔄 Replacing int16 2D array '{old_name}' with '{new_name}'")
@@ -372,7 +372,7 @@ def rename_int16_arrays(script):
     int16_array_pattern = re.compile(r'\bconst\s+int16\s+([a-zA-Z_][\w]*)\s*\[\]\s*=\s*\{', re.MULTILINE)
     matches = int16_array_pattern.findall(script)
 
-    array_map = {array_name: generate_random_name("arr_") for array_name in matches}
+    array_map = {array_name: generate_random_name("RocketMod_") for array_name in matches}
 
     for old_name, new_name in array_map.items():
         print(f"🔄 Replacing int16 array '{old_name}' with '{new_name}'")
