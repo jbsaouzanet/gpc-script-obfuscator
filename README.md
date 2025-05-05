@@ -100,4 +100,13 @@ For questions or collaborations, contact me at :
 💬 GitHub Issues: Open an Issue
 
 ## Donate
-If you enjoyed the script and found it useful, I’d really appreciate your support! You can **buy me a coffee** here: [buymeacoffee.com/jorel1337 ](https://buymeacoffee.com/jorel1337 )  :coffee:
+**🚀 Want to Support** 
+Your support helps us keep growing and improving. If you’d like to contribute, here’s how:
+
+
+**💰 How to Donate**  
+
+Send your donation via **PayPal** or **Revolut** using one of the links below:
+
+🔗 paypal :  https://www.paypal.com/donate/?hosted_button_id=4H8ZEL2VFJBQS  
+🔗 revolut : https://revolut.me/jeanba13q8
