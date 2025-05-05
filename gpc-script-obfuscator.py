@@ -405,7 +405,6 @@ def process_script(filename=None):
     warn_unnecessary_int(script)
     warn_colon_at_end_of_line(script)
     script = toggle_dev_mod(script)
-    script = prepend_obfuscation_comment(script)  # Add message at the top
     script = rename_uint8_arrays(script)
     script = rename_defines(script)
     script = rename_functions(script)
@@ -419,6 +418,9 @@ def process_script(filename=None):
     script = rename_string_arrays(script)
     script = rename_combos(script)
     script = rename_enums(script)
+    # Replace every newline by a space
+    script = script.replace('\n', ' ')
+    script = prepend_obfuscation_comment(script)  # Add message at the top
     new_filename = save_script(filename, script)
     print("\n✅ Script processed with :")
     print(f"❌ Total Errors: {error_count}")
