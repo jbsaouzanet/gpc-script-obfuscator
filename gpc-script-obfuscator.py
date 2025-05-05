@@ -418,8 +418,9 @@ def process_script(filename=None):
     script = rename_string_arrays(script)
     script = rename_combos(script)
     script = rename_enums(script)
-    # Replace every newline by a space
-    script = script.replace('\n', ' ')
+    # Replace every newline & tab by a space
+    script = script.replace('\n', ' ').replace('\t', ' ')
+    script = re.sub(r' +', ' ', script)
     script = prepend_obfuscation_comment(script)  # Add message at the top
     new_filename = save_script(filename, script)
     print("\n✅ Script processed with :")
