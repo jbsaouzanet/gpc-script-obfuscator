@@ -277,7 +277,7 @@ def rename_enums(script):
 def prepend_obfuscation_comment(script):
     obfuscation_message = "// Obfuscation done with gpc-script-obfuscator script\n"
     obfuscation_message += "// (join Discord: https://discord.gg/7ZGANnFEUS to get more info and last update)\n"
-    obfuscation_message += "// you liked ? pay me a coffee : https://buymeacoffee.com/jorel1337\n\n"
+    obfuscation_message += "// you liked ? do a donation https://www.paypal.com/donate/?hosted_button_id=4H8ZEL2VFJBQS  \n\n"
     return obfuscation_message + script.strip()
 
 # General function to replace words securely
