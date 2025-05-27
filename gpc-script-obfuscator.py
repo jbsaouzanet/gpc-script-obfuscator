@@ -380,6 +380,18 @@ def rename_int16_arrays(script):
 
     return script
 
+def obfuscate_numbers_with_hex(code):
+    # Match integers not part of variable names, strings, or comments
+    def replace_decimal_with_hex(match):
+        number = int(match.group())
+        return hex(number)
+
+    # Avoid matching numbers in strings, comments, or identifiers
+    pattern = r'\b\d+\b'
+    code = re.sub(pattern, replace_decimal_with_hex, code)
+    return code
+
+
 def warn_colon_at_end_of_line(script):
     """
     Identifies lines where a colon (:) appears at the end and logs an error with the line number.
@@ -421,6 +433,7 @@ def process_script(filename=None):
     # Replace every newline & tab by a space
     script = script.replace('\n', ' ').replace('\t', ' ')
     script = re.sub(r' +', ' ', script)
+    script = obfuscate_numbers_with_hex(script)
     script = prepend_obfuscation_comment(script)  # Add message at the top
     new_filename = save_script(filename, script)
     print("\n✅ Script processed with :")
