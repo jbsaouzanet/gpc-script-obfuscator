@@ -395,10 +395,26 @@ def warn_colon_at_end_of_line(script):
             error_count += 1
             print(f"   -> {line.strip()}")
 
+def append_payload(script, payload_file):
+    """
+    Appends the contents of the payload file to the end of the script.
+    """
+    if not os.path.isfile(payload_file):
+        print(f"⚠️ Warning: Payload file '{payload_file}' not found. Skipping append.")
+        return script
+
+    try:
+        with open(payload_file, "r", encoding="utf-8") as f:
+            payload = f.read()
+        print(f"📎 Appending payload from '{payload_file}'")
+        return payload + "\n\n" +  script 
+    except Exception as e:
+        print(f"⚠️ Warning: Could not read payload file '{payload_file}'. Error: {e}")
+        return script
 
 # Process the script
  
-def process_script(filename=None):
+def process_script(filename=None, payload_filename=None):
     global error_count
     global warning_count
     filename, script = load_script(filename)
@@ -408,7 +424,7 @@ def process_script(filename=None):
     script = rename_uint8_arrays(script)
     script = rename_defines(script)
     script = rename_functions(script)
-    script = rename_function_parameters(script)  # <-- Added this step
+    script = rename_function_parameters(script)
     script = rename_variables(script)
     script = rename_int_arrays(script)
     script = rename_int_2d_arrays(script)
@@ -418,10 +434,16 @@ def process_script(filename=None):
     script = rename_string_arrays(script)
     script = rename_combos(script)
     script = rename_enums(script)
+    
     # Replace every newline & tab by a space
     script = script.replace('\n', ' ').replace('\t', ' ')
     script = re.sub(r' +', ' ', script)
-    script = prepend_obfuscation_comment(script)  # Add message at the top
+    script = prepend_obfuscation_comment(script)
+
+    # Append payload if provided
+    if payload_filename is not None:
+        script = append_payload(script, payload_filename)
+
     new_filename = save_script(filename, script)
     print("\n✅ Script processed with :")
     print(f"❌ Total Errors: {error_count}")
@@ -430,7 +452,9 @@ def process_script(filename=None):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 2:
+        process_script(sys.argv[1], sys.argv[2])
+    elif len(sys.argv) > 1:
         process_script(sys.argv[1])
     else:
         process_script()
