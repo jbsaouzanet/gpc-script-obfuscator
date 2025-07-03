@@ -407,7 +407,7 @@ def append_payload(script, payload_file):
         with open(payload_file, "r", encoding="utf-8") as f:
             payload = f.read()
         print(f"📎 Appending payload from '{payload_file}'")
-        return script + "\n\n" + payload
+        return payload + "\n\n" +  script 
     except Exception as e:
         print(f"⚠️ Warning: Could not read payload file '{payload_file}'. Error: {e}")
         return script

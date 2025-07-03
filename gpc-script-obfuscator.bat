@@ -24,7 +24,7 @@ set "script_python=%script_dir%gpc-script-obfuscator.py"
 
 :: Check if the Python script exists
 if not exist "%script_python%" (
-    echo ❌ Error: The file "%script_python%" is not found.
+    echo Error: The file "%script_python%" is not found.
     pause >nul
     exit /b 1
 )
@@ -36,11 +36,11 @@ if "%append_file%"=="" (
     python "%script_python%" "%gpc_file%" "%append_file%"
 )
 if errorlevel 1 (
-    echo ❌ An error occurred while executing the Python script.
+    echo An error occurred while executing the Python script.
     pause >nul
     exit /b 1
 )
 
-echo ✅ Obfuscation completed! Press any key to close...
+echo Obfuscation completed! Press any key to close...
 pause >nul
 endlocal
